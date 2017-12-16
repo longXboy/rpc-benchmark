@@ -22,10 +22,9 @@ public class AppClient {
     public static void main(String[] args) throws Exception {
         String host = "127.0.0.1";
 
-        final int threads = 10;
-        int n = 100;
+        final int threads = 100;
+        int n = 1000000;
         BenchmarkMessage msg = prepareArgs();
-        Greeter.Client[] client = createClients(host, threads, msg);
 
 
         final DescriptiveStatistics stats = new SynchronizedDescriptiveStatistics();
@@ -36,33 +35,36 @@ public class AppClient {
         final AtomicInteger transOK = new AtomicInteger(0);
 
 
-        final CountDownLatch latch = new CountDownLatch(n);
+        final CountDownLatch latch = new CountDownLatch(threads);
 
         final int count = n / threads; //count per client
         long start = System.currentTimeMillis();
         for (int i = 0; i < threads; i++) {
-            final int k = i;
-
             es.submit(() -> {
-                for (int j = 0; j < count; j++) {
-                    try {
-                        long t = System.currentTimeMillis();
-                        BenchmarkMessage m = client[k].say(msg);
-                        t = System.currentTimeMillis() - t;
-                        stats.addValue(t);
+                try{
 
-                        trans.incrementAndGet();
+                    Greeter.Client client = createClient(host, threads, msg);
 
-                        if (m != null && m.getField1().equals("OK")) {
-                            transOK.incrementAndGet();
-                        }
+                    for (int j = 0; j < count; j++) {
+                            long t = System.currentTimeMillis();
+                            BenchmarkMessage m = client.say(msg);
+                            t = System.currentTimeMillis() - t;
+                            stats.addValue(t);
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        latch.countDown();
+                            trans.incrementAndGet();
+
+                            if (m != null && m.getField1().equals("OK")) {
+                                transOK.incrementAndGet();
+                            }
                     }
+                }catch (Exception e){
+                    e.printStackTrace();
+
+                } finally {
+                    latch.countDown();
                 }
+
+
             });
         }
 
@@ -70,11 +72,12 @@ public class AppClient {
         latch.await();
 
         start = System.currentTimeMillis() - start;
-
+        System.out.printf("concurrent     num   : %d\n", threads);
         System.out.printf("sent     requests    : %d\n", n);
         System.out.printf("received requests    : %d\n", trans.get());
         System.out.printf("received requests_OK : %d\n", transOK.get());
-        System.out.printf("throughput  (TPS)    : %d\n", n * 1000 / start);
+        long total = n;
+        System.out.printf("throughput  (TPS)    : %d\n", total * 1000 / start);
 
 
         System.out.printf("mean: %f\n", stats.getMean());
@@ -85,6 +88,16 @@ public class AppClient {
         System.out.printf("TP99: %f\n", stats.getPercentile(99));
         System.out.printf("TP999: %f\n", stats.getPercentile(99.9));
 
+    }
+    public static Greeter.Client createClient(String host, int n, BenchmarkMessage msg) throws TException {
+        TTransport transport = new TFramedTransport(new TSocket(host, 8972));
+        transport.open();
+        TProtocol protocol = new TBinaryProtocol(transport);
+        Greeter.Client client =  new Greeter.Client(protocol);
+        //warm up
+        client.say(msg);
+
+        return client;
     }
 
     public static Greeter.Client[] createClients(String host, int n, BenchmarkMessage msg) throws TException {
@@ -105,9 +118,9 @@ public class AppClient {
     }
 
     public static BenchmarkMessage prepareArgs() throws InvocationTargetException, IllegalAccessException {
-
+        int i = 2276543;
+        long l =1;
         boolean b = true;
-        int i = 100000;
         String s = "许多往事在眼前一幕一幕，变的那麼模糊";
 
 
@@ -127,6 +140,8 @@ public class AppClient {
                         m.invoke(msg, new Object[]{i});
                     } else if (n.equals("boolean")) {
                         m.invoke(msg, new Object[]{b});
+                    }else if (n.equals("long")){
+                        m.invoke(msg, new Object[]{l});
                     }
 
                 }

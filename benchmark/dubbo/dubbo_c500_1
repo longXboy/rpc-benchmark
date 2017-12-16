@@ -1,0 +1,12 @@
+msg      length      : 608
+concurrent     num   : 500
+sent     requests    : 5000000
+received requests    : 5000000
+received requests_OK : 5000000
+throughput  (TPS)    : 54447
+mean: 9.167025
+median: 7.000000
+max: 8370.000000
+min: 0.000000
+TP99: 16.000000
+TP999: 330.000000
