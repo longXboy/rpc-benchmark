@@ -8,13 +8,19 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.lang.reflect.InvocationTargetException;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ken.lj on 2017/7/31.
  */
 public class Consumer {
 
-    public static void main(String[] args) throws InvocationTargetException, IllegalAccessException {
+    public static void main(String[] args) throws InvocationTargetException, IllegalAccessException,InterruptedException {
         //Prevent to get IPV6 address,this way only work in debug mode
         //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -26,16 +32,56 @@ public class Consumer {
         DubboBenchmark.BenchmarkMessage msg = prepareArgs();
         final byte[] msgBytes = msg.toByteArray();
 
-        try {
-            byte[] reply = demoService.say(msgBytes);
-            DubboBenchmark.BenchmarkMessage replyMsg = DubboBenchmark.BenchmarkMessage.parseFrom(reply);
-            if (replyMsg != null && replyMsg.getField1().equals("OK")) {
-                System.out.println(replyMsg); // get result
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        int threads = 100;
+        int n = 1000000;
+        final CountDownLatch latch = new CountDownLatch(n);
+        ExecutorService es = Executors.newFixedThreadPool(threads);
+
+        final DescriptiveStatistics stats = new SynchronizedDescriptiveStatistics();
+        final AtomicInteger trans = new AtomicInteger(0);
+        final AtomicInteger transOK = new AtomicInteger(0);
+
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < n; i++) {
+            es.submit(() -> {
+                try {
+
+                    long t = System.currentTimeMillis();
+                    byte[] reply = demoService.say(msgBytes);
+                    DubboBenchmark.BenchmarkMessage replyMsg = DubboBenchmark.BenchmarkMessage.parseFrom(reply);
+                    t = System.currentTimeMillis() - t;
+
+                    stats.addValue(t);
+                    trans.incrementAndGet();
+                    if (replyMsg != null) {
+                        transOK.incrementAndGet();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    latch.countDown();
+                }
+            });
         }
 
+        latch.await();
+        start = System.currentTimeMillis() - start;
+
+        System.out.printf("msg      length      : %d\n", msgBytes.length);
+        System.out.printf("concurrent     num   : %d\n", threads);
+        System.out.printf("sent     requests    : %d\n", n);
+        System.out.printf("received requests    : %d\n", trans.get());
+        System.out.printf("received requests_OK : %d\n", transOK.get());
+        System.out.printf("throughput  (TPS)    : %d\n", n * 1000 / start);
+
+
+        System.out.printf("mean: %f\n", stats.getMean());
+        System.out.printf("median: %f\n", stats.getPercentile(50));
+        System.out.printf("max: %f\n", stats.getMax());
+        System.out.printf("min: %f\n", stats.getMin());
+
+        System.out.printf("TP99: %f\n", stats.getPercentile(99));
+        System.out.printf("TP999: %f\n", stats.getPercentile(99.9));
 
       /*  while (true) {
             try {
@@ -56,7 +102,8 @@ public class Consumer {
     static DubboBenchmark.BenchmarkMessage prepareArgs() throws InvocationTargetException, IllegalAccessException {
 
         boolean b = true;
-        int i = 100000;
+        int i = 2276543;
+        long l =1;
         String s = "许多往事在眼前一幕一幕，变的那麼模糊";
 
 
@@ -75,6 +122,8 @@ public class Consumer {
                         m.invoke(builder, new Object[]{i});
                     } else if (n.equals("boolean")) {
                         m.invoke(builder, new Object[]{b});
+                    }else if (n.equals("long")){
+                        m.invoke(builder, new Object[]{l});
                     }
 
                 }
