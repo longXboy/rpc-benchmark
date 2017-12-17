@@ -2,10 +2,11 @@ concurrent     num   : 200
 sent     requests    : 2000000
 received requests    : 2000000
 received requests_OK : 2000000
-throughput  (TPS)    : 91436
-mean: 2.106809
+throughput  (TPS)    : 89944
+mean: 2.065128
 median: 2.000000
-max: 165.000000
+max: 134.000000
 min: 0.000000
 TP99: 10.000000
-TP999: 41.000000
+TP999: 28.000000
+
