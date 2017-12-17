@@ -32,8 +32,8 @@ public class Consumer {
         DubboBenchmark.BenchmarkMessage msg = prepareArgs();
         final byte[] msgBytes = msg.toByteArray();
 
-        int threads = 100;
-        int n = 1000000;
+        int threads = 500;
+        int n = 5000000;
         final CountDownLatch latch = new CountDownLatch(n);
         ExecutorService es = Executors.newFixedThreadPool(threads);
 
@@ -72,7 +72,8 @@ public class Consumer {
         System.out.printf("sent     requests    : %d\n", n);
         System.out.printf("received requests    : %d\n", trans.get());
         System.out.printf("received requests_OK : %d\n", transOK.get());
-        System.out.printf("throughput  (TPS)    : %d\n", n * 1000 / start);
+        long total = n;
+        System.out.printf("throughput  (TPS)    : %d\n", total * 1000 / start);
 
 
         System.out.printf("mean: %f\n", stats.getMean());

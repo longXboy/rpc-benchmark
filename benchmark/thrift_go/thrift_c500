@@ -1,0 +1,7 @@
+2017/12/17 11:25:18 main.go:128: INFO : took 55644 ms for 5000000 requests
+2017/12/17 11:25:21 main.go:146: INFO : sent     requests    : 5000000
+2017/12/17 11:25:21 main.go:147: INFO : received requests    : 5000000
+2017/12/17 11:25:21 main.go:148: INFO : received requests_OK : 5000000
+2017/12/17 11:25:21 main.go:149: INFO : throughput  (TPS)    : 89856
+2017/12/17 11:25:21 main.go:150: INFO : mean: 5536904 ns, median: 5299400 ns, max: 136796249 ns, min: 43473 ns, p99: 11780233 ns 21517394 ns
+2017/12/17 11:25:21 main.go:151: INFO : mean: 5 ms, median: 5 ms, max: 136 ms, min: 0 ms, p99: 11 ms,p999:21 ms

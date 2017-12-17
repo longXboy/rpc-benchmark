@@ -6,11 +6,16 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="thrift-bench" />
+        <module name="dubbo-demo-api" />
+        <module name="dubbo-demo-consumer" />
+        <module name="dubbo-demo-provider" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="1.8">
-      <module name="thrift-bench" target="1.5" />
+    <bytecodeTargetLevel>
+      <module name="dubbo-demo" target="1.6" />
+      <module name="dubbo-demo-api" target="1.6" />
+      <module name="dubbo-demo-consumer" target="1.8" />
+      <module name="dubbo-demo-provider" target="1.6" />
     </bytecodeTargetLevel>
   </component>
 </project>
