@@ -30,7 +30,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc.InitialWindowSize(65535*100), grpc.InitialConnWindowSize(65535*1000))
 
 	service.RegisterHelloServer(s, &Hello{})
 	s.Serve(lis)

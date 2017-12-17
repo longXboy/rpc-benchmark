@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -18,8 +17,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-var concurrency = flag.Int("c", 1, "concurrency")
-var total = flag.Int("n", 1, "total requests for all clients")
+var concurrency = flag.Int("c", 50, "concurrency")
+var total = flag.Int("n", 500000, "total requests for all clients")
 var host = flag.String("s", "127.0.0.1:8972", "server ip and port")
 
 func main() {
@@ -36,7 +35,6 @@ func main() {
 	log.Infof("concurrency: %d\nrequests per client: %d\n\n", n, m)
 
 	args := prepareArgs()
-	fmt.Println(*args)
 	b, _ := proto.Marshal(args)
 	log.Infof("message size: %d bytes\n\n", len(b))
 
@@ -56,16 +54,17 @@ func main() {
 		selected = (selected + 1) % sNum
 
 		go func(i int, selected int) {
-			conn, err := grpc.Dial(servers[selected], grpc.WithInsecure())
+			conn, err := grpc.Dial(servers[selected], grpc.WithInsecure(),
+				grpc.WithInitialWindowSize(65535*100),
+				grpc.WithInitialConnWindowSize(65535*1000),
+			)
 			if err != nil {
 				log.Fatalf("did not connect: %v", err)
 			}
 			c := service.NewHelloClient(conn)
 
 			//warmup
-			for j := 0; j < 1; j++ {
-				c.Say(context.Background(), args)
-			}
+			c.Say(context.Background(), args)
 
 			for j := 0; j < m; j++ {
 				t := time.Now().UnixNano()

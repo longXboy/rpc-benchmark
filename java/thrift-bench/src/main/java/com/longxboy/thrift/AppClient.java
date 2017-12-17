@@ -22,8 +22,8 @@ public class AppClient {
     public static void main(String[] args) throws Exception {
         String host = "127.0.0.1";
 
-        final int threads = 500;
-        int n =5000000;
+        final int threads = 50;
+        int n =500000;
         BenchmarkMessage msg = prepareArgs();
 
 

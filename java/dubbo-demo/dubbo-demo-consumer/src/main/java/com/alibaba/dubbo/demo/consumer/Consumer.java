@@ -27,14 +27,15 @@ public class Consumer {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
         context.start();
 
-        DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
 
         DubboBenchmark.BenchmarkMessage msg = prepareArgs();
         final byte[] msgBytes = msg.toByteArray();
 
         int threads = 500;
         int n = 5000000;
-        final CountDownLatch latch = new CountDownLatch(n);
+        final int count = n / threads; //count per client
+
+        final CountDownLatch latch = new CountDownLatch(threads);
         ExecutorService es = Executors.newFixedThreadPool(threads);
 
         final DescriptiveStatistics stats = new SynchronizedDescriptiveStatistics();
@@ -42,20 +43,24 @@ public class Consumer {
         final AtomicInteger transOK = new AtomicInteger(0);
 
         long start = System.currentTimeMillis();
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < threads; i++) {
             es.submit(() -> {
                 try {
+                    DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
 
-                    long t = System.currentTimeMillis();
-                    byte[] reply = demoService.say(msgBytes);
-                    DubboBenchmark.BenchmarkMessage replyMsg = DubboBenchmark.BenchmarkMessage.parseFrom(reply);
-                    t = System.currentTimeMillis() - t;
+                    for (int j = 0; j < count; j++) {
+                        long t = System.currentTimeMillis();
+                        byte[] reply = demoService.say(msgBytes);
+                        DubboBenchmark.BenchmarkMessage replyMsg = DubboBenchmark.BenchmarkMessage.parseFrom(reply);
+                        t = System.currentTimeMillis() - t;
 
-                    stats.addValue(t);
-                    trans.incrementAndGet();
-                    if (replyMsg != null) {
-                        transOK.incrementAndGet();
+                        stats.addValue(t);
+                        trans.incrementAndGet();
+                        if (replyMsg != null) {
+                            transOK.incrementAndGet();
+                        }
                     }
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {

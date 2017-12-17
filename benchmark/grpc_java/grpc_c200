@@ -1,0 +1,12 @@
+concurrent     num   : 200
+sent     requests    : 2000000
+received requests    : 2000000
+received requests_OK : 2000000
+throughput  (TPS)    : 30947
+mean: 6.107776
+median: 4.000000
+max: 898.000000
+min: 0.000000
+TP99: 29.000000
+TP999: 86.000000
+
