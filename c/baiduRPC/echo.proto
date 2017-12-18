@@ -1,0 +1,62 @@
+syntax="proto2";
+option cc_generic_services = true;
+option optimize_for = SPEED;
+
+package example;
+
+message EchoRequest {
+      optional string message = 1;
+};
+
+message EchoResponse {
+      optional string message = 1;
+};
+
+service EchoService {
+      rpc Echo(EchoRequest) returns (EchoResponse);
+      rpc Greet(BenchmarkMessage) returns (BenchmarkMessage);
+      
+};
+
+message BenchmarkMessage {
+  optional string field1 = 1 [default="许多往事在眼前一幕一幕，变的那麼模糊"];;
+  optional string field9 = 9 [default="许多往事在眼前一幕一幕，变的那麼模糊"];;
+  optional string field18 = 18 [default="许多往事在眼前一幕一幕，变的那麼模糊"];;
+  optional bool field80 = 80 [default=false];
+  optional bool field81 = 81 [default=true];
+  optional int32 field2 = 2  [default=1200003];
+  optional int32 field3 = 3  [default=1200003];
+  optional int32 field280 = 280 [default=1200003];
+  optional int32 field6 = 6 [default=1200003];
+  optional int64 field22 = 22;
+  optional string field4 = 4 [default="许多往事在眼前一幕一幕，变的那麼模糊"];;
+  repeated fixed64 field5 = 5 ;
+  optional bool field59 = 59 [default=false];
+  optional string field7 = 7 [default="许多往事在眼前一幕一幕，变的那麼模糊"];;
+  optional int32 field16 = 16  [default=1200003];
+  optional int32 field130 = 130 [default=1200003];
+  optional bool field12 = 12 [default=true];
+  optional bool field17 = 17 [default=true];
+  optional bool field13 = 13 [default=true];
+  optional bool field14 = 14 [default=true];
+  optional int32 field104 = 104 [default=1200003];
+  optional int32 field100 = 100 [default=1200003];
+  optional int32 field101 = 101 [default=1200003];
+  optional string field102 = 102 [default="许多往事在眼前一幕一幕，变的那麼模糊"];;
+  optional string field103 = 103 [default="许多往事在眼前一幕一幕，变的那麼模糊"];;
+  optional int32 field29 = 29 [default=1200003];
+  optional bool field30 = 30 [default=false];
+  optional int32 field60 = 60 [default=1200003];
+  optional int32 field271 = 271 [default=1200003];
+  optional int32 field272 = 272 [default=1200003];
+  optional int32 field150 = 150 [default=1200003];
+  optional int32 field23 = 23 [default=1200003];
+  optional bool field24 = 24 [default=true];
+  optional int32 field25 = 25 [default=1200003];
+  optional bool field78 = 78;
+  optional int32 field67 = 67 [default=1200003];
+  optional int32 field68 = 68 [default=1200003];
+  optional int32 field128 = 128 [default=1200003];
+  optional string field129 = 129 [default="许多往事在眼前一幕一幕，变的那麼模糊"];
+  optional int32 field131 = 131 [default=1200003];
+}
