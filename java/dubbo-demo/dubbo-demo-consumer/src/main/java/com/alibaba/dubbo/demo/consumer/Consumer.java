@@ -29,10 +29,9 @@ public class Consumer {
 
 
         DubboBenchmark.BenchmarkMessage msg = prepareArgs();
-        final byte[] msgBytes = msg.toByteArray();
 
-        int threads = 500;
-        int n = 5000000;
+        int threads = 100;
+        int n = 1000000;
         final int count = n / threads; //count per client
 
         final CountDownLatch latch = new CountDownLatch(threads);
@@ -50,6 +49,7 @@ public class Consumer {
 
                     for (int j = 0; j < count; j++) {
                         long t = System.currentTimeMillis();
+                        final byte[] msgBytes = msg.toByteArray();
                         byte[] reply = demoService.say(msgBytes);
                         DubboBenchmark.BenchmarkMessage replyMsg = DubboBenchmark.BenchmarkMessage.parseFrom(reply);
                         t = System.currentTimeMillis() - t;
@@ -72,7 +72,6 @@ public class Consumer {
         latch.await();
         start = System.currentTimeMillis() - start;
 
-        System.out.printf("msg      length      : %d\n", msgBytes.length);
         System.out.printf("concurrent     num   : %d\n", threads);
         System.out.printf("sent     requests    : %d\n", n);
         System.out.printf("received requests    : %d\n", trans.get());

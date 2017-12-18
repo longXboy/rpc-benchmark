@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"net"
+	"runtime"
 
 	service "grpc"
 
@@ -24,6 +25,7 @@ func (t *Hello) Say(ctx context.Context, args *service.BenchmarkMessage) (reply 
 var host = flag.String("s", "127.0.0.1:8972", "listened ip and port")
 
 func main() {
+	runtime.GOMAXPROCS(12)
 	flag.Parse()
 
 	lis, err := net.Listen("tcp", *host)
