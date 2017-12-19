@@ -15,15 +15,16 @@
  */
 package com.alibaba.dubbo.demo.provider;
 
-import com.alibaba.dubbo.demo.DemoService;
 import com.alibaba.dubbo.rpc.RpcContext;
-import com.alibaba.dubbo.demo.DubboBenchmark;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 
 public class DemoServiceImpl implements DemoService {
+    static public AtomicInteger at;
 
     public String sayHello(String name) {
         System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
@@ -32,6 +33,7 @@ public class DemoServiceImpl implements DemoService {
 
 
     public byte[] say(byte[] msg) {
+        at.incrementAndGet();
         try {
             DubboBenchmark.BenchmarkMessage data = DubboBenchmark.BenchmarkMessage.newBuilder().mergeFrom(msg)
                     .setField1("OK").setField2(100).build();

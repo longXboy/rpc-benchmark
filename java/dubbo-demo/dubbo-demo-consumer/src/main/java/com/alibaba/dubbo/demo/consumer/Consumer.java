@@ -27,11 +27,29 @@ public class Consumer {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
         context.start();
 
+        int threads = 10;
+        int n = 1000000;
+        int clientNum = 5;
+        if (args.length > 0) {
+            threads = Integer.parseInt(args[0]);
+        }
+        if (args.length > 1){
+            n = Integer.parseInt(args[1]);
+        }
+        if (args.length > 2){
+            clientNum = Integer.parseInt(args[2]);
+        }
+        final int cNum = clientNum;
+        DemoService []clients =  new DemoService[clientNum];
+        for (int i = 0; i < clientNum; i++) {
+            clients[i] =  (DemoService) context.getBean("demoService");
+        }
+        AtomicInteger at = new AtomicInteger( 0);
+
+
 
         DubboBenchmark.BenchmarkMessage msg = prepareArgs();
 
-        int threads = 100;
-        int n = 1000000;
         final int count = n / threads; //count per client
 
         final CountDownLatch latch = new CountDownLatch(threads);
@@ -45,7 +63,8 @@ public class Consumer {
         for (int i = 0; i < threads; i++) {
             es.submit(() -> {
                 try {
-                    DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
+                    int idx = at.incrementAndGet();
+                    DemoService demoService = clients[idx%cNum];
 
                     for (int j = 0; j < count; j++) {
                         long t = System.currentTimeMillis();
