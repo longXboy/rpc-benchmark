@@ -20,10 +20,29 @@ import org.apache.thrift.transport.TFramedTransport;
 
 public class AppClient {
     public static void main(String[] args) throws Exception {
-        String host = "127.0.0.1";
+        int threads = 100;
+        int n = 100000;
+        int clientNum = 100;
+        String host= "127.0.0.1";
 
-        final int threads = 100;
-        int n =1000000;
+        if (args.length > 0){
+            host = args[0];
+        }
+        if (args.length > 1) {
+            threads = Integer.parseInt(args[1]);
+        }
+        if (args.length > 2){
+            n = Integer.parseInt(args[2]);
+        }
+        if (args.length > 3){
+            clientNum = Integer.parseInt(args[3]);
+        }
+        final int cNum = clientNum;
+        Greeter.Client []clients =  new Greeter.Client[clientNum];
+        for (int i = 0; i < clientNum; i++) {
+            clients[i] =   createClient(host);
+        }
+
         BenchmarkMessage msg = prepareArgs();
 
 
@@ -38,12 +57,14 @@ public class AppClient {
         final CountDownLatch latch = new CountDownLatch(threads);
 
         final int count = n / threads; //count per client
+        AtomicInteger at = new AtomicInteger( 0);
+
         long start = System.currentTimeMillis();
         for (int i = 0; i < threads; i++) {
             es.submit(() -> {
                 try{
-
-                    Greeter.Client client = createClient(host, threads, msg);
+                    int idx = at.incrementAndGet();
+                    Greeter.Client client = clients[idx%cNum];
 
                     for (int j = 0; j < count; j++) {
                             long t = System.currentTimeMillis();
@@ -89,33 +110,14 @@ public class AppClient {
         System.out.printf("TP999: %f\n", stats.getPercentile(99.9));
 
     }
-    public static Greeter.Client createClient(String host, int n, BenchmarkMessage msg) throws TException {
+    public static Greeter.Client createClient(String host) throws TException {
         TTransport transport = new TFramedTransport(new TSocket(host, 8972));
         transport.open();
         TProtocol protocol = new TBinaryProtocol(transport);
         Greeter.Client client =  new Greeter.Client(protocol);
-        //warm up
-        client.say(msg);
-
         return client;
     }
 
-    public static Greeter.Client[] createClients(String host, int n, BenchmarkMessage msg) throws TException {
-        TTransport[] transport = new TTransport[n];
-        Greeter.Client[] clients = new Greeter.Client[n];
-
-        //warmup
-        for (int i = 0; i < n; i++) {
-            transport[i] =new TFramedTransport(new TSocket(host, 8972));
-            transport[i].open();
-
-            TProtocol protocol = new TBinaryProtocol(transport[i]);
-            clients[i] =  new Greeter.Client(protocol);
-            clients[i].say(msg);
-        }
-
-        return clients;
-    }
 
     public static BenchmarkMessage prepareArgs() throws InvocationTargetException, IllegalAccessException {
         int i = 2276543;
